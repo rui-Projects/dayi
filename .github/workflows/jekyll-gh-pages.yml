@@ -1,4 +1,5 @@
-name: Deploy Single HTML to GitHub Pages
+# 文件路径: .github/workflows/deploy.yml
+name: Deploy HTML to GitHub Pages
 
 on:
   push:
@@ -9,6 +10,10 @@ permissions:
   contents: read
   pages: write
   id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-inprogress: false
 
 jobs:
   build:
@@ -22,14 +27,23 @@ jobs:
         
       - name: Prepare site structure
         run: |
+          # 创建输出目录
           mkdir -p _site
-          # 复制你的HTML文件（替换为实际文件名）
-          cp new_file_modified.html _site/index.html
-          # 如果有其他资源文件，也一并复制
-          cp -r css/ _site/ 2>/dev/null || true
-          cp -r js/ _site/ 2>/dev/null || true
-          cp -r images/ _site/ 2>/dev/null || true
           
+          # 复制 HTML 文件到站点根目录
+          cp new_file_modified.html _site/index.html
+          
+          # 复制 CNAME 文件（重要！用于自定义域名）
+          cp CNAME _site/CNAME
+          
+          # 如果有其他静态资源，也一并复制
+          # cp -r css/ _site/ 2>/dev/null || true
+          # cp -r js/ _site/ 2>/dev/null || true
+          # cp -r images/ _site/ 2>/dev/null || true
+          
+          echo "站点结构准备完成"
+          ls -la _site/
+        
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
